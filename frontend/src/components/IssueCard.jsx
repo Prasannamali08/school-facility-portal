@@ -23,12 +23,15 @@ const IssueCard = ({ issue }) => {
       to={`/issues/${issue._id}`}
       className="card overflow-hidden hover:shadow-md transition-shadow"
     >
-      {/* Image */}
+      {/* Issue Image */}
       {issue.images && issue.images.length > 0 && (
         <img
           src={issue.images[0].url}
           alt={issue.title}
           className="w-full h-48 object-cover"
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
         />
       )}
 
@@ -47,7 +50,7 @@ const IssueCard = ({ issue }) => {
           {issue.description}
         </p>
 
-        <div className="flex items-center flex-wrap gap-3 text-xs text-gray-400 mt-1">
+        <div className="flex items-center flex-wrap gap-3 text-xs text-gray-400 mt-2">
           <span className="flex items-center gap-1">
             <FiMapPin size={12} />
             {issue.location}
@@ -62,7 +65,7 @@ const IssueCard = ({ issue }) => {
             {issue.priority}
           </span>
 
-          <span className="badge bg-gray-50 text-gray-500">
+          <span className="badge bg-gray-100 text-gray-600">
             {issue.category}
           </span>
         </div>
