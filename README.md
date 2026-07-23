@@ -29,7 +29,7 @@ Built as a production-style internship evaluation project.
 | Database   | MongoDB + Mongoose                                      |
 | Auth       | JWT, bcrypt                                             |
 | Storage    | Cloudinary (image uploads via Multer)                   |
-| Deployment | Vercel (frontend), Render (backend), MongoDB Atlas      |
+| Deployment | Render, MongoDB Atlas, Cloudinary |
 
 ## Folder Structure
 
@@ -97,12 +97,12 @@ JWT_EXPIRES_IN=7d
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=https://school-facility-portal-ldoq.onrender.com
 ```
 
 **frontend/.env**
 ```
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://school-facility-portal-ldoq.onrender.com/api
 ```
 
 ## Sample Accounts (after `npm run seed`)
@@ -149,7 +149,7 @@ Full request/response examples are in `School_Facility_Portal.postman_collection
 
 ## Deployment
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions covering MongoDB Atlas, Cloudinary, Render, and Vercel.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions covering MongoDB Atlas, Cloudinary, and Render deployment.
 
 ## Testing
 
@@ -173,3 +173,10 @@ left as extension points rather than half-implemented:
   React Testing Library (frontend) are natural next additions.
 - **Email delivery** — password reset currently returns a token directly in the API response for demo purposes;
   wire up `nodemailer` (already listed as a dependency) with real SMTP credentials to email it instead.
+  
+-**Production URL section**
+## Live Demo
+Application:
+https://school-facility-portal-ldoq.onrender.com
+API:
+https://school-facility-portal-ldoq.onrender.com/api
