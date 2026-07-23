@@ -107,7 +107,7 @@ npm run dev
 Backend URL
 
 ```
-http://localhost:5000/api
+https://school-facility-portal-ldoq.onrender.com/api
 ```
 
 Frontend

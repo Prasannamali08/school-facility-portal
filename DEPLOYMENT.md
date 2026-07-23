@@ -149,7 +149,7 @@ npm run dev
 Backend runs at:
 
 ```
-http://localhost:5000
+https://school-facility-portal-ldoq.onrender.com/api
 ```
 
 ### Frontend
