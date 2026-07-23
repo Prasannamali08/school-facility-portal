@@ -1,0 +1,132 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const path = require('path');
+
+const connectDB = require('./config/db');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
+
+const authRoutes = require('./routes/authRoutes');
+const issueRoutes = require('./routes/issueRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const userRoutes = require('./routes/userRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+
+// Connect Database
+connectDB();
+
+const app = express();
+
+// ==========================
+// Security Middleware
+// ==========================
+
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || '*',
+    credentials: true,
+  })
+);
+
+// ==========================
+// Body Parser
+// ==========================
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Prevent NoSQL Injection
+app.use(mongoSanitize());
+
+// ==========================
+// Rate Limiter
+// ==========================
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many requests, please try again later',
+  },
+});
+
+app.use('/api', apiLimiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many authentication attempts. Please try again later.',
+  },
+});
+
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
+// ==========================
+// Health Check
+// ==========================
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API is running',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// ==========================
+// API Routes
+// ==========================
+
+app.use('/api/auth', authRoutes);
+app.use('/api/issues', issueRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
+// ==========================
+// Serve React Frontend
+// ==========================
+
+const rootPath = path.resolve(__dirname, '..');
+
+app.use(express.static(path.join(rootPath, 'frontend', 'dist')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(rootPath, 'frontend', 'dist', 'index.html'));
+});
+
+// ==========================
+// Error Handling
+// ==========================
+
+app.use(notFound);
+app.use(errorHandler);
+
+// ==========================
+// Start Server
+// ==========================
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(
+    `Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+  );
+});
+
+module.exports = app;

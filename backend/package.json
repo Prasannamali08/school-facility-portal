@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "school-facility-portal": "file:.."
+  }
+}
