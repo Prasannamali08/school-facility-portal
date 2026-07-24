@@ -64,84 +64,181 @@ const ManageUsers = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-1">Manage Users</h1>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">View, promote, deactivate, or remove user accounts.</p>
+  <div className="space-y-8">
 
-      <div className="card p-4 mb-4 flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <FiSearch className="absolute left-3 top-3 text-gray-400" />
-          <input className="input-field pl-9" placeholder="Search name or email..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <select className="input-field sm:w-48" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
-          <option value="">All Roles</option>
-          <option value="parent">Parent</option>
-          <option value="teacher">Teacher</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
+    {/* Header */}
+    <div className="mb-8">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        Manage Users
+      </h1>
 
-      <div className="card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-700 text-left text-gray-500">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Joined</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
-            ) : users.length ? (
-              users.map((u) => (
-                <tr key={u._id} className="border-t border-gray-100 dark:border-gray-700">
-                  <td className="px-4 py-3 font-medium">{u.name}</td>
-                  <td className="px-4 py-3 text-gray-500">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      className="border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 bg-white dark:bg-gray-700 text-xs"
-                      value={u.role}
-                      disabled={u._id === currentUser.id}
-                      onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                    >
-                      <option value="parent">Parent</option>
-                      <option value="teacher">Teacher</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => handleToggleActive(u._id, u.isActive)}
-                      disabled={u._id === currentUser.id}
-                      className={`badge ${u.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}
-                    >
-                      {u.isActive ? 'Active' : 'Inactive'}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-gray-400">{new Date(u.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => handleDelete(u._id)}
-                      disabled={u._id === currentUser.id}
-                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-danger disabled:opacity-30"
-                    >
-                      <FiTrash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">No users found</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <p className="mt-2 text-gray-500 dark:text-gray-400">
+        View, update roles, activate/deactivate, or remove user accounts.
+      </p>
     </div>
-  );
+
+    {/* Search & Filter */}
+    <div className="card p-6 shadow-lg rounded-2xl flex flex-col lg:flex-row gap-4">
+
+      <div className="relative flex-1">
+        <FiSearch className="absolute left-3 top-3 text-gray-400" />
+
+        <input
+          className="input-field pl-10"
+          placeholder="Search by name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      <select
+        className="input-field lg:w-56"
+        value={roleFilter}
+        onChange={(e) => setRoleFilter(e.target.value)}
+      >
+        <option value="">All Roles</option>
+        <option value="parent">Parent</option>
+        <option value="teacher">Teacher</option>
+        <option value="admin">Admin</option>
+      </select>
+
+    </div>
+
+    {/* Users Table */}
+    <div className="card shadow-lg rounded-2xl overflow-hidden overflow-x-auto">
+
+      <table className="w-full text-sm">
+
+        <thead className="bg-gray-100 dark:bg-gray-700 text-left uppercase text-xs tracking-wide text-gray-600 dark:text-gray-200">
+
+          <tr>
+            <th className="px-5 py-4">Name</th>
+            <th className="px-5 py-4">Email</th>
+            <th className="px-5 py-4">Role</th>
+            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4">Joined</th>
+            <th className="px-5 py-4 text-center">Actions</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {loading ? (
+
+            <tr>
+              <td
+                colSpan={6}
+                className="py-10 text-center text-gray-400"
+              >
+                Loading...
+              </td>
+            </tr>
+
+          ) : users.length ? (
+
+            users.map((u) => (
+
+              <tr
+                key={u._id}
+                className="border-b border-gray-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800 transition"
+              >
+
+                <td className="px-5 py-4 font-semibold">
+                  {u.name}
+                </td>
+
+                <td className="px-5 py-4 text-gray-500">
+                  {u.email}
+                </td>
+
+                <td className="px-5 py-4">
+
+                  <select
+                    className="input-field py-2 text-sm"
+                    value={u.role}
+                    disabled={u._id === currentUser.id}
+                    onChange={(e) =>
+                      handleRoleChange(u._id, e.target.value)
+                    }
+                  >
+                    <option value="parent">Parent</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="admin">Admin</option>
+                  </select>
+
+                </td>
+
+                <td className="px-5 py-4">
+
+                  <button
+                    onClick={() =>
+                      handleToggleActive(
+                        u._id,
+                        u.isActive
+                      )
+                    }
+                    disabled={u._id === currentUser.id}
+                    className={`badge px-3 py-2 ${
+                      u.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {u.isActive
+                      ? "Active"
+                      : "Inactive"}
+                  </button>
+
+                </td>
+
+                <td className="px-5 py-4 text-gray-500">
+                  {new Date(
+                    u.createdAt
+                  ).toLocaleDateString()}
+                </td>
+
+                <td className="px-5 py-4 text-center">
+
+                  <button
+                    onClick={() =>
+                      handleDelete(u._id)
+                    }
+                    disabled={u._id === currentUser.id}
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 transition disabled:opacity-40"
+                  >
+                    <FiTrash2 size={18} />
+                  </button>
+
+                </td>
+
+              </tr>
+
+            ))
+
+          ) : (
+
+            <tr>
+
+              <td
+                colSpan={6}
+                className="py-10 text-center text-gray-400"
+              >
+                No users found
+              </td>
+
+            </tr>
+
+          )}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+);
 };
 
 export default ManageUsers;

@@ -19,22 +19,84 @@ export const priorityColors = {
 
 const IssueCard = ({ issue }) => {
   return (
-    <Link to={`/issues/${issue._id}`} className="card p-4 flex flex-col gap-2 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-gray-800 dark:text-gray-100 line-clamp-1">{issue.title}</h3>
-        <span className={`badge whitespace-nowrap ${statusColors[issue.status]}`}>{issue.status}</span>
+    <Link
+      to={`/issues/${issue._id}`}
+      className="card overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+    >
+
+      {/* Issue Image */}
+      <div className="h-48 bg-gray-100 dark:bg-gray-700">
+        {issue.images?.length > 0 ? (
+          <img
+            src={issue.images[0].url}
+            alt={issue.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://placehold.co/600x400?text=No+Image";
+            }}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+            No Image Available
+          </div>
+        )}
       </div>
-      <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{issue.description}</p>
-      <div className="flex items-center flex-wrap gap-3 text-xs text-gray-400 mt-1">
-        <span className="flex items-center gap-1">
-          <FiMapPin size={12} /> {issue.location}
-        </span>
-        <span className="flex items-center gap-1">
-          <FiClock size={12} /> {new Date(issue.createdAt).toLocaleDateString()}
-        </span>
-        <span className={`badge ${priorityColors[issue.priority]}`}>{issue.priority}</span>
-        <span className="badge bg-gray-50 text-gray-500">{issue.category}</span>
+
+      {/* Card Content */}
+      <div className="p-5">
+
+        {/* Title + Status */}
+        <div className="flex justify-between items-start gap-3 mb-3">
+          <h3 className="font-bold text-lg text-gray-800 dark:text-white line-clamp-2">
+            {issue.title}
+          </h3>
+
+          <span
+            className={`badge whitespace-nowrap ${statusColors[issue.status]}`}
+          >
+            {issue.status}
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 mb-4">
+          {issue.description}
+        </p>
+
+        {/* Bottom Info */}
+        <div className="space-y-3">
+
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <FiMapPin className="text-primary-500" />
+            <span>{issue.location}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <FiClock className="text-primary-500" />
+            <span>
+              {new Date(issue.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2">
+
+            <span
+              className={`badge ${priorityColors[issue.priority]}`}
+            >
+              {issue.priority}
+            </span>
+
+            <span className="badge bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+              {issue.category}
+            </span>
+
+          </div>
+
+        </div>
+
       </div>
+
     </Link>
   );
 };

@@ -43,9 +43,14 @@ const Sidebar = ({ open, onClose }) => {
           {user.role === 'admin' && (
             <>
               <div className="pt-4 pb-1 px-4 text-xs font-semibold uppercase text-gray-400">Admin</div>
-              <NavLink to="/admin" className={linkClasses} onClick={onClose}>
-                <FiBarChart2 /> Admin Dashboard
-              </NavLink>
+              <NavLink
+                 to="/admin"
+                     end
+                    className={linkClasses}
+                     onClick={onClose}
+               >
+                      <FiBarChart2 /> Admin Dashboard
+                </NavLink>
               <NavLink to="/admin/users" className={linkClasses} onClick={onClose}>
                 <FiUsers /> Manage Users
               </NavLink>

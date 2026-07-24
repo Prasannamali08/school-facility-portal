@@ -61,111 +61,303 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">School-wide facility issue analytics and management.</p>
-      </div>
+  <div className="space-y-8">
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard icon={<FiClipboard />} label="Total Issues" value={summary?.total ?? 0} color="blue" loading={!summary} />
-        <StatCard icon={<FiClock />} label="Pending" value={summary?.pending ?? 0} color="orange" loading={!summary} />
-        <StatCard icon={<FiCheckCircle />} label="Resolved" value={summary?.resolved ?? 0} color="green" loading={!summary} />
-        <StatCard icon={<FiAlertTriangle />} label="Critical" value={summary?.critical ?? 0} color="red" loading={!summary} />
-        <StatCard icon={<FiUsers />} label="Total Users" value={summary?.totalUsers ?? 0} color="gray" loading={!summary} />
-      </div>
+    {/* Header */}
+    <div className="mb-8">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        Admin Dashboard
+      </h1>
 
-      <div className="card p-4">
-        <p className="text-sm text-gray-500">Average Resolution Time</p>
-        <p className="text-3xl font-bold text-primary-600">{summary?.avgResolutionHours ?? 0} hrs</p>
-      </div>
+      <p className="mt-2 text-gray-500 dark:text-gray-400">
+        School-wide facility issue analytics and management.
+      </p>
+    </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="card p-5">
-          <h2 className="font-semibold mb-4">Issues by Status</h2>
-          {charts?.byStatus.length ? <Pie data={pieData} /> : <p className="text-sm text-gray-400">No data yet</p>}
-        </div>
-        <div className="card p-5">
-          <h2 className="font-semibold mb-4">Issues by Priority</h2>
-          {charts?.byPriority.length ? (
-            <Bar data={barData} options={{ plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }} />
-          ) : (
-            <p className="text-sm text-gray-400">No data yet</p>
-          )}
-        </div>
-      </div>
+    {/* Statistics */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
+      <StatCard
+        icon={<FiClipboard />}
+        label="Total Issues"
+        value={summary?.total ?? 0}
+        color="blue"
+        loading={!summary}
+      />
 
-      <div>
-        <h2 className="font-semibold mb-3">Manage All Issues</h2>
-        <div className="card p-4 mb-4 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
-            <input
-              className="input-field pl-9"
-              placeholder="Search issues..."
-              value={filters.search}
-              onChange={(e) => { setPage(1); setFilters((p) => ({ ...p, search: e.target.value })); }}
-            />
-          </div>
-          <select
-            className="input-field sm:w-48"
-            value={filters.status}
-            onChange={(e) => { setPage(1); setFilters((p) => ({ ...p, status: e.target.value })); }}
-          >
-            <option value="">All Statuses</option>
-            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
+      <StatCard
+        icon={<FiClock />}
+        label="Pending"
+        value={summary?.pending ?? 0}
+        color="orange"
+        loading={!summary}
+      />
 
-        <div className="card overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700 text-left text-gray-500">
-              <tr>
-                <th className="px-4 py-3">Title</th>
-                <th className="px-4 py-3">Reported By</th>
-                <th className="px-4 py-3">Priority</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
-              ) : issues.length ? (
-                issues.map((issue) => (
-                  <tr key={issue._id} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="px-4 py-3">
-                      <Link to={`/issues/${issue._id}`} className="font-medium hover:underline">{issue.title}</Link>
-                    </td>
-                    <td className="px-4 py-3">{issue.reportedBy?.name}</td>
-                    <td className="px-4 py-3"><span className={`badge ${priorityColors[issue.priority]}`}>{issue.priority}</span></td>
-                    <td className="px-4 py-3"><span className={`badge ${statusColors[issue.status]}`}>{issue.status}</span></td>
-                    <td className="px-4 py-3 text-gray-400">{new Date(issue.createdAt).toLocaleDateString()}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">No issues found</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <StatCard
+        icon={<FiCheckCircle />}
+        label="Resolved"
+        value={summary?.resolved ?? 0}
+        color="green"
+        loading={!summary}
+      />
 
-        {pages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-4">
-            {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-9 h-9 rounded-lg text-sm font-medium ${p === page ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200'}`}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+      <StatCard
+        icon={<FiAlertTriangle />}
+        label="Critical"
+        value={summary?.critical ?? 0}
+        color="red"
+        loading={!summary}
+      />
+
+      <StatCard
+        icon={<FiUsers />}
+        label="Total Users"
+        value={summary?.totalUsers ?? 0}
+        color="gray"
+        loading={!summary}
+      />
+    </div>
+
+    {/* Average Resolution */}
+    <div className="card p-6 shadow-lg">
+      <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+        Average Resolution Time
+      </p>
+
+      <p className="mt-2 text-4xl font-bold text-primary-600">
+        {summary?.avgResolutionHours ?? 0} hrs
+      </p>
+    </div>
+
+    {/* Charts */}
+    <div className="grid xl:grid-cols-2 gap-8">
+
+      <div className="card p-6 shadow-lg">
+        <h2 className="text-lg font-bold mb-6">
+          Issues by Status
+        </h2>
+
+        {charts?.byStatus?.length ? (
+          <Pie data={pieData} />
+        ) : (
+          <p className="text-gray-400">No data yet</p>
         )}
       </div>
+
+      <div className="card p-6 shadow-lg">
+        <h2 className="text-lg font-bold mb-6">
+          Issues by Priority
+        </h2>
+
+        {charts?.byPriority?.length ? (
+          <Bar
+            data={barData}
+            options={{
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    precision: 0,
+                  },
+                },
+              },
+            }}
+          />
+        ) : (
+          <p className="text-gray-400">No data yet</p>
+        )}
+      </div>
+
     </div>
-  );
+
+    {/* Manage Issues */}
+    <div>
+
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-bold">
+          Manage All Issues
+        </h2>
+      </div>
+
+      <div className="card p-6 shadow-lg mb-6 flex flex-col lg:flex-row gap-4">
+
+        <div className="relative flex-1">
+
+          <FiSearch className="absolute left-3 top-3 text-gray-400" />
+
+          <input
+            className="input-field pl-10"
+            placeholder="Search issues..."
+            value={filters.search}
+            onChange={(e) => {
+              setPage(1);
+              setFilters((prev) => ({
+                ...prev,
+                search: e.target.value,
+              }));
+            }}
+          />
+
+        </div>
+
+        <select
+          className="input-field lg:w-56"
+          value={filters.status}
+          onChange={(e) => {
+            setPage(1);
+            setFilters((prev) => ({
+              ...prev,
+              status: e.target.value,
+            }));
+          }}
+        >
+          <option value="">All Statuses</option>
+
+          {STATUSES.map((status) => (
+            <option
+              key={status}
+              value={status}
+            >
+              {status}
+            </option>
+          ))}
+        </select>
+
+      </div>
+
+      <div className="card shadow-lg overflow-hidden overflow-x-auto">
+
+        <table className="w-full text-sm">
+
+          <thead className="bg-gray-100 dark:bg-gray-700 text-left uppercase text-xs tracking-wide text-gray-600 dark:text-gray-200">
+
+            <tr>
+              <th className="px-5 py-4">Title</th>
+              <th className="px-5 py-4">Reported By</th>
+              <th className="px-5 py-4">Priority</th>
+              <th className="px-5 py-4">Status</th>
+              <th className="px-5 py-4">Date</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {loading ? (
+
+              <tr>
+                <td
+                  colSpan={5}
+                  className="text-center py-10 text-gray-400"
+                >
+                  Loading...
+                </td>
+              </tr>
+
+            ) : issues.length ? (
+
+              issues.map((issue) => (
+
+                <tr
+                  key={issue._id}
+                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-gray-800 transition"
+                >
+
+                  <td className="px-5 py-4">
+
+                    <Link
+                      to={`/issues/${issue._id}`}
+                      className="font-semibold hover:text-primary-600"
+                    >
+                      {issue.title}
+                    </Link>
+
+                  </td>
+
+                  <td className="px-5 py-4">
+                    {issue.reportedBy?.name}
+                  </td>
+
+                  <td className="px-5 py-4">
+
+                    <span className={`badge ${priorityColors[issue.priority]}`}>
+                      {issue.priority}
+                    </span>
+
+                  </td>
+
+                  <td className="px-5 py-4">
+
+                    <span className={`badge ${statusColors[issue.status]}`}>
+                      {issue.status}
+                    </span>
+
+                  </td>
+
+                  <td className="px-5 py-4 text-gray-500">
+                    {new Date(issue.createdAt).toLocaleDateString()}
+                  </td>
+
+                </tr>
+
+              ))
+
+            ) : (
+
+              <tr>
+
+                <td
+                  colSpan={5}
+                  className="text-center py-10 text-gray-400"
+                >
+                  No issues found
+                </td>
+
+              </tr>
+
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {pages > 1 && (
+
+        <div className="flex justify-center gap-3 mt-8">
+
+          {Array.from(
+            { length: pages },
+            (_, i) => i + 1
+          ).map((p) => (
+
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`w-10 h-10 rounded-xl font-semibold transition ${
+                p === page
+                  ? 'bg-primary-600 text-white shadow-md'
+                  : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {p}
+            </button>
+
+          ))}
+
+        </div>
+
+      )}
+
+    </div>
+
+  </div>
+);
 };
 
 export default AdminDashboard;

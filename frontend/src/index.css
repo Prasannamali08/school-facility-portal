@@ -2,35 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
 body {
   @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Simple skeleton loading animation used across dashboards */
+/* Skeleton Loading */
 .skeleton {
-  @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded-lg;
 }
 
+/* Cards */
 .card {
-  @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700;
+  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700;
 }
 
+/* Primary Button */
 .btn-primary {
-  @apply bg-primary-600 hover:bg-primary-700 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-primary-600 hover:bg-primary-700
+  text-white font-semibold
+  px-5 py-3
+  rounded-xl
+  shadow-sm hover:shadow-md
+  transition-all duration-200
+  disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
+/* Secondary Button */
 .btn-secondary {
-  @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+  @apply bg-gray-100 hover:bg-gray-200
+  dark:bg-gray-700 dark:hover:bg-gray-600
+  text-gray-700 dark:text-gray-200
+  font-semibold
+  px-5 py-3
+  rounded-xl
+  transition-all duration-200;
 }
 
+/* Universal Input Style */
 .input-field {
-  @apply w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500;
+  @apply w-full
+  rounded-xl
+  border border-gray-300
+  dark:border-gray-600
+  bg-white dark:bg-gray-700
+  text-gray-900 dark:text-white
+  placeholder:text-gray-400
+  px-4 py-3
+  shadow-sm
+  transition-all duration-200
+  focus:outline-none
+  focus:ring-2
+  focus:ring-primary-500
+  focus:border-primary-500;
 }
 
+/* Labels */
+.input-label {
+  @apply block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2;
+}
+
+/* Badges */
 .badge {
   @apply text-xs font-semibold px-2 py-1 rounded-full;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
 }

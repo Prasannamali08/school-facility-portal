@@ -45,8 +45,7 @@ const handleImageChange = (e) => {
 
     const preview = URL.createObjectURL(file);
 
-    console.log("Selected File:", file);
-    console.log("Preview URL:", preview);
+   
 
     validFiles.push({
       file,
@@ -54,7 +53,7 @@ const handleImageChange = (e) => {
     });
   });
 
-  console.log("Valid Files:", validFiles);
+ 
 
   setImages((prev) => [...prev, ...validFiles]);
 
@@ -90,15 +89,24 @@ navigate("/track-issues");
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1">Report a Facility Issue</h1>
-      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-        Provide as much detail as possible to help us resolve it quickly.
-      </p>
+    <div className="max-w-3xl mx-auto">
 
-      <form onSubmit={handleSubmit(onSubmit)} className="card p-6 space-y-5">
+  <div className="mb-8">
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      Report a Facility Issue
+    </h1>
+
+    <p className="mt-2 text-gray-500 dark:text-gray-400">
+      Describe the issue clearly and upload photos to help the maintenance team resolve it quickly.
+    </p>
+  </div>
+
+     <form
+  onSubmit={handleSubmit(onSubmit)}
+  className="card p-8 shadow-lg space-y-6"
+>
         <div>
-          <label className="text-sm font-medium mb-1 block">Title</label>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Title</label>
           <input
             className="input-field"
             placeholder="e.g. Broken chair in Room 101"
@@ -109,13 +117,13 @@ navigate("/track-issues");
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium mb-1 block">Category</label>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Category</label>
             <select className="input-field" {...register('category', { required: true })}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium mb-1 block">Priority</label>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Priority</label>
             <select className="input-field" {...register('priority', { required: true })} defaultValue="Medium">
               {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -123,7 +131,7 @@ navigate("/track-issues");
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-1 block">Location</label>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Location</label>
           <input
             className="input-field"
             placeholder="e.g. Block A - Room 101"
@@ -133,7 +141,7 @@ navigate("/track-issues");
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-1 block">Description</label>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Description</label>
           <textarea
             rows={4}
             className="input-field"
@@ -144,21 +152,24 @@ navigate("/track-issues");
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-1 block">Photos (optional, up to {MAX_IMAGES})</label>
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg py-8 cursor-pointer hover:border-primary-400">
-            <FiUploadCloud size={28} className="text-gray-400 mb-2" />
-            <span className="text-sm text-gray-500">Click to upload JPG, PNG, or WEBP (max {MAX_SIZE_MB}MB each)</span>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Photos (optional, up to {MAX_IMAGES})</label>
+       <label className="group flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl py-10 cursor-pointer hover:border-primary-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300">
+           <FiUploadCloud
+  size={42}
+  className="text-primary-500 mb-3 transition-transform duration-300 group-hover:scale-110"
+/>
+            <span className="text-center text-sm text-gray-500 dark:text-gray-400 px-4">Click to upload JPG, PNG, or WEBP (max {MAX_SIZE_MB}MB each)</span>
             <input type="file" multiple accept="image/jpeg,image/jpg,image/png,image/webp" className="hidden" onChange={handleImageChange} />
           </label>
 
           {images.length > 0 && (
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mt-5">
               {images.map((img, i) => (
                 <div key={i} className="relative">
   <img
   src={img.preview}
   alt="preview"
-  className="w-full h-20 object-cover rounded-lg border"
+  className="w-full h-24 object-cover rounded-xl border shadow-sm"
   onError={(e) => {
     console.error("Preview failed:", img.preview);
     e.target.style.display = "none";
@@ -167,7 +178,7 @@ navigate("/track-issues");
                   <button
                     type="button"
                     onClick={() => removeImage(i)}
-                    className="absolute -top-2 -right-2 bg-danger text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md transition-all"
                   >
                     <FiX size={12} />
                   </button>
@@ -177,7 +188,11 @@ navigate("/track-issues");
           )}
         </div>
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
+        <button
+  type="submit"
+  disabled={loading}
+  className="btn-primary w-full py-3 text-base font-semibold"
+>
           {loading ? 'Submitting...' : 'Submit Report'}
         </button>
       </form>
