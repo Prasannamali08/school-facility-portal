@@ -31,7 +31,9 @@ const handleImageChange = (e) => {
   const validFiles = [];
 
   files.forEach((file) => {
-    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+    if (
+      !["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)
+    ) {
       toast.error(`${file.name}: Unsupported file type`);
       return;
     }
@@ -41,17 +43,22 @@ const handleImageChange = (e) => {
       return;
     }
 
+    const preview = URL.createObjectURL(file);
+
+    console.log("Selected File:", file);
+    console.log("Preview URL:", preview);
+
     validFiles.push({
       file,
-      preview: URL.createObjectURL(file),
+      preview,
     });
   });
 
-  console.log(validFiles);
+  console.log("Valid Files:", validFiles);
 
   setImages((prev) => [...prev, ...validFiles]);
 
-e.target.value = "";
+  e.target.value = "";
 };
     
 
@@ -148,14 +155,13 @@ navigate("/track-issues");
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3">
               {images.map((img, i) => (
                 <div key={i} className="relative">
-                  <img
+  <img
   src={img.preview}
   alt="preview"
   className="w-full h-20 object-cover rounded-lg border"
   onError={(e) => {
     console.error("Preview failed:", img.preview);
-    e.target.src =
-      "https://placehold.co/150x100?text=Preview+Error";
+    e.target.style.display = "none";
   }}
 />
                   <button

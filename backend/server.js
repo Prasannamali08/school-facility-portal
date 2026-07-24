@@ -26,7 +26,45 @@ const app = express();
 // Security Middleware
 // ==========================
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+
+        scriptSrc: ["'self'"],
+
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+        ],
+
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          "https://res.cloudinary.com",
+          "https://placehold.co",
+        ],
+
+        connectSrc: [
+          "'self'",
+          process.env.CLIENT_URL || "*",
+          "https://res.cloudinary.com",
+        ],
+
+        fontSrc: [
+          "'self'",
+          "data:",
+        ],
+
+        objectSrc: ["'none'"],
+
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
 
 app.use(
   cors({
