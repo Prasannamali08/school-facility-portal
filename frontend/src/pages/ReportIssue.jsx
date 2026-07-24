@@ -20,31 +20,45 @@ const ReportIssue = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (images.length + files.length > MAX_IMAGES) {
-      toast.error(`You can upload a maximum of ${MAX_IMAGES} images`);
+const handleImageChange = (e) => {
+  const files = Array.from(e.target.files);
+
+  if (images.length + files.length > MAX_IMAGES) {
+    toast.error(`You can upload a maximum of ${MAX_IMAGES} images`);
+    return;
+  }
+
+  const validFiles = [];
+
+  files.forEach((file) => {
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error(`${file.name}: Unsupported file type`);
       return;
     }
-    const validFiles = [];
-    for (const file of files) {
-      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
-        toast.error(`${file.name}: unsupported file type`);
-        continue;
-      }
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        toast.error(`${file.name}: exceeds ${MAX_SIZE_MB}MB limit`);
-        continue;
-      }
-      validFiles.push({ file, preview: URL.createObjectURL(file) });
-    }
-    setImages((prev) => [...prev, ...validFiles]);
-    e.target.value = '';
-  };
 
-  const removeImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      toast.error(`${file.name}: Maximum size is ${MAX_SIZE_MB}MB`);
+      return;
+    }
+
+    validFiles.push({
+      file,
+      preview: URL.createObjectURL(file),
+    });
+  });
+
+  console.log(validFiles);
+
+  setImages((prev) => [...prev, ...validFiles]);
+
+e.target.value = "";
+};
+    
+
+const removeImage = (index) => {
+  URL.revokeObjectURL(images[index].preview);
+  setImages((prev) => prev.filter((_, i) => i !== index));
+};
 
   const onSubmit = async (formData) => {
     setLoading(true);
@@ -54,10 +68,13 @@ const ReportIssue = () => {
       images.forEach((img) => fd.append('images', img.file));
 
       await api.post('/issues', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      toast.success('Issue reported successfully!');
-      reset();
-      setImages([]);
-      navigate('/track-issues');
+     toast.success("Issue reported successfully!");
+
+images.forEach((img) => URL.revokeObjectURL(img.preview));
+
+reset();
+setImages([]);
+navigate("/track-issues");
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to report issue');
     } finally {
@@ -131,7 +148,16 @@ const ReportIssue = () => {
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3">
               {images.map((img, i) => (
                 <div key={i} className="relative">
-                  <img src={img.preview} alt="preview" className="w-full h-20 object-cover rounded-lg" />
+                  <img
+  src={img.preview}
+  alt="preview"
+  className="w-full h-20 object-cover rounded-lg border"
+  onError={(e) => {
+    console.error("Preview failed:", img.preview);
+    e.target.src =
+      "https://placehold.co/150x100?text=Preview+Error";
+  }}
+/>
                   <button
                     type="button"
                     onClick={() => removeImage(i)}
