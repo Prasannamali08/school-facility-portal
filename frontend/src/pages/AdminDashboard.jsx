@@ -185,24 +185,28 @@ const AdminDashboard = () => {
 
       <div className="card p-6 shadow-lg mb-6 flex flex-col lg:flex-row gap-4">
 
-        <div className="relative flex-1">
+         <div className="relative flex-1">
 
-          <FiSearch className="absolute left-3 top-3 text-gray-400" />
+              <FiSearch
+                size={20}
+                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+              />
 
-          <input
-            className="input-field pl-10"
-            placeholder="Search issues..."
-            value={filters.search}
-            onChange={(e) => {
-              setPage(1);
-              setFilters((prev) => ({
-                ...prev,
-                search: e.target.value,
-              }));
-            }}
-          />
+              <input
+                type="text"
+                className="input-field pl-20"
+                placeholder="Search issues..."
+                value={filters.search}
+                onChange={(e) => {
+                  setPage(1);
+                  setFilters((prev) => ({
+                    ...prev,
+                    search: e.target.value,
+                  }));
+                }}
+              />
 
-        </div>
+            </div>
 
         <select
           className="input-field lg:w-56"

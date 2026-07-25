@@ -63,7 +63,12 @@ const TrackIssues = () => {
         if (!params[key]) delete params[key];
       });
 
-      const { data } = await api.get('/issues/my', { params });
+     const endpoint =
+  user?.role === 'admin'
+    ? '/issues'
+    : '/issues/my';
+
+const { data } = await api.get(endpoint, { params });
 
       setIssues(data.issues);
       setPages(data.pages);
@@ -72,8 +77,7 @@ const TrackIssues = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, page]);
-
+  }, [filters, page, user]);
   useEffect(() => {
     fetchIssues();
   }, [fetchIssues]);
@@ -105,24 +109,24 @@ const TrackIssues = () => {
 
       <div className="card p-6 shadow-lg mb-8 grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
-        <div className="relative lg:col-span-2">
+              <div className="relative lg:col-span-2">
 
           <FiSearch
             size={20}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
           />
 
           <input
-            className="input-field pl-12"
+            type="text"
+            className="input-field pl-20"
             placeholder="Search title, description, location..."
             value={filters.search}
             onChange={(e) =>
-              handleFilterChange('search', e.target.value)
+              handleFilterChange("search", e.target.value)
             }
           />
 
         </div>
-
         <select
           className="input-field cursor-pointer"
           value={filters.category}
