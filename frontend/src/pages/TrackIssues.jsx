@@ -107,26 +107,26 @@ const { data } = await api.get(endpoint, { params });
 
       {/* Filters */}
 
-      <div className="card p-6 shadow-lg mb-8 grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+     <div className="card p-6 shadow-lg mb-8 grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
-              <div className="relative lg:col-span-2">
+  <div className="lg:col-span-2 flex items-center bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3">
 
-          <FiSearch
-            size={20}
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-          />
+    <FiSearch
+      size={20}
+      className="text-gray-400 mr-4 flex-shrink-0"
+    />
 
-          <input
-            type="text"
-            className="input-field pl-20"
-            placeholder="Search title, description, location..."
-            value={filters.search}
-            onChange={(e) =>
-              handleFilterChange("search", e.target.value)
-            }
-          />
+    <input
+      type="text"
+      placeholder="Search title, description, location..."
+      value={filters.search}
+      onChange={(e) =>
+        handleFilterChange("search", e.target.value)
+      }
+      className="w-full bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-gray-400"
+    />
 
-        </div>
+  </div>
         <select
           className="input-field cursor-pointer"
           value={filters.category}

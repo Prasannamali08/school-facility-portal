@@ -185,28 +185,28 @@ const AdminDashboard = () => {
 
       <div className="card p-6 shadow-lg mb-6 flex flex-col lg:flex-row gap-4">
 
-         <div className="relative flex-1">
+                <div className="flex items-center flex-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 shadow-sm">
 
-              <FiSearch
-                size={20}
-                className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-              />
+          <FiSearch
+            size={20}
+            className="text-gray-400 mr-4 flex-shrink-0"
+          />
 
-              <input
-                type="text"
-                className="input-field pl-20"
-                placeholder="Search issues..."
-                value={filters.search}
-                onChange={(e) => {
-                  setPage(1);
-                  setFilters((prev) => ({
-                    ...prev,
-                    search: e.target.value,
-                  }));
-                }}
-              />
+          <input
+            type="text"
+            placeholder="Search issues..."
+            value={filters.search}
+            onChange={(e) => {
+              setPage(1);
+              setFilters((prev) => ({
+                ...prev,
+                search: e.target.value,
+              }));
+            }}
+            className="w-full bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-gray-400"
+          />
 
-            </div>
+        </div>
 
         <select
           className="input-field lg:w-56"

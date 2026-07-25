@@ -42,25 +42,30 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [summaryRes, chartsRes, issuesRes] = await Promise.all([
-          api.get('/analytics/summary'),
-          api.get('/analytics/charts'),
-          api.get('/issues/my?limit=4'),
-        ]);
+    try {
+  const issueEndpoint =
+    user?.role === "admin"
+      ? "/issues?limit=4"
+      : "/issues/my?limit=4";
 
-        setSummary(summaryRes.data.summary);
-        setCharts(chartsRes.data.charts);
-        setRecentIssues(issuesRes.data.issues);
-      } catch (err) {
-        // handled globally
-      } finally {
-        setLoading(false);
-      }
+  const [summaryRes, chartsRes, issuesRes] = await Promise.all([
+    api.get("/analytics/summary"),
+    api.get("/analytics/charts"),
+    api.get(issueEndpoint),
+  ]);
+
+  setSummary(summaryRes.data.summary);
+  setCharts(chartsRes.data.charts);
+  setRecentIssues(issuesRes.data.issues);
+} catch (err) {
+  // handled globally
+} finally {
+  setLoading(false);
+}
     };
 
     fetchData();
-  }, []);
+ }, [user]);
 
   const pieData = {
     labels: charts?.byStatus.map((s) => s.status) || [],

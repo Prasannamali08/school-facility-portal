@@ -80,16 +80,21 @@ const ManageUsers = () => {
     {/* Search & Filter */}
     <div className="card p-6 shadow-lg rounded-2xl flex flex-col lg:flex-row gap-4">
 
-      <div className="relative flex-1">
-        <FiSearch className="absolute left-3 top-3 text-gray-400" />
+<div className="flex items-center flex-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 transition-all">
+  <FiSearch
+    size={20}
+    className="text-gray-400 mr-4 flex-shrink-0"
+  />
 
-        <input
-          className="input-field pl-10"
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+  <input
+    type="text"
+    placeholder="Search name or email..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="w-full bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-gray-400"
+  />
+
+</div>
 
       <select
         className="input-field lg:w-56"
@@ -155,7 +160,7 @@ const ManageUsers = () => {
                 <td className="px-5 py-4">
 
                   <select
-                    className="input-field py-2 text-sm"
+                    className="input-field py-2 px-3 text-sm"
                     value={u.role}
                     disabled={u._id === currentUser.id}
                     onChange={(e) =>
