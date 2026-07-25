@@ -35,30 +35,35 @@ Built as a production-style internship evaluation project.
 
 ```
 school-facility-portal/
+│
 ├── backend/
-│   ├── config/            # DB + Cloudinary configuration
-│   ├── controllers/       # Route handler logic (MVC "Controller")
-│   ├── middleware/        # Auth, error handling, file upload
-│   ├── models/            # Mongoose schemas (User, Issue, Notification, RepairHistory)
-│   ├── routes/            # Express route definitions
-│   ├── seed/              # Sample data seed script
-│   ├── utils/             # Token generation, notification helper
-│   └── server.js          # App entry point
+│   ├── config/                 # Database and Cloudinary configuration
+│   ├── controllers/            # Business logic and route handlers
+│   ├── middleware/             # Authentication, error handling, file upload
+│   ├── models/                 # Mongoose models (User, Issue, Notification, RepairHistory)
+│   ├── routes/                 # Express API routes
+│   ├── seed/                   # Database seed scripts
+│   ├── utils/                  # JWT token and helper functions
+│   └── server.js               # Backend entry point
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # Navbar, Sidebar, IssueCard, StatCard, ProtectedRoute
-│   │   ├── context/        # AuthContext (global auth state)
-│   │   ├── layouts/        # DashboardLayout (Navbar + Sidebar wrapper)
-│   │   ├── pages/          # Home, Login, Register, Dashboard, ReportIssue, etc.
-│   │   ├── services/       # Axios instance with interceptors
-│   │   ├── App.jsx         # Route definitions
-│   │   └── main.jsx        # React entry point
+│   │   ├── components/         # Reusable UI components
+│   │   ├── context/            # React Context (Authentication)
+│   │   ├── layouts/            # Dashboard layout (Navbar + Sidebar)
+│   │   ├── pages/              # Application pages
+│   │   ├── services/           # Axios API service
+│   │   ├── App.jsx             # Application routes
+│   │   └── main.jsx            # React application entry point
 │   └── index.html
 │
-├── DEPLOYMENT.md
-├── TESTING.md
-└── School_Facility_Portal.postman_collection.json
+├── DEPLOYMENT.md               # Deployment guide
+├── TESTING.md                  # Testing documentation
+├── School_Facility_Portal.postman_collection.json
+│                                # API testing collection
+├── package.json
+├── package-lock.json
+└── README.md
 ```
 
 ## Installation
