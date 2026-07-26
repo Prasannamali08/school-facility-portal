@@ -213,35 +213,91 @@ const deleteIssue = async (req, res, next) => {
   }
 };
 
-// @desc Assign an issue to a maintenance staff / teacher
+
+// @desc Assign an issue to a teacher
 // @route PUT /api/issues/:id/assign
 // @access Private (admin)
 const assignIssue = async (req, res, next) => {
   try {
     const { assignedTo } = req.body;
-    if (!assignedTo) return res.status(400).json({ success: false, message: 'assignedTo user id is required' });
 
+    if (!assignedTo) {
+      return res.status(400).json({
+        success: false,
+        message: "Assigned user ID is required",
+      });
+    }
+
+    // Find the issue
     const issue = await Issue.findById(req.params.id);
-    if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
 
+    if (!issue) {
+      return res.status(404).json({
+        success: false,
+        message: "Issue not found",
+      });
+    }
+
+    // Find the assigned user
     const staff = await User.findById(assignedTo);
-    if (!staff) return res.status(404).json({ success: false, message: 'Assigned user not found' });
 
+    if (!staff) {
+      return res.status(404).json({
+        success: false,
+        message: "Assigned user not found",
+      });
+    }
+
+    // Allow only teachers
+    if (staff.role !== "teacher") {
+      return res.status(400).json({
+        success: false,
+        message: "Only teachers can be assigned to issues",
+      });
+    }
+
+    // Update issue
     issue.assignedTo = assignedTo;
-    issue.status = 'Assigned';
-    issue.timeline.push({ status: 'Assigned', note: `Assigned to ${staff.name}`, updatedBy: req.user._id });
+    issue.status = "Assigned";
+
+    issue.timeline.push({
+      status: "Assigned",
+      note: `Assigned to ${staff.name}`,
+      updatedBy: req.user._id,
+    });
+
     await issue.save();
 
-    await RepairHistory.create({ issue: issue._id, updatedBy: req.user._id, status: 'Assigned', note: `Assigned to ${staff.name}` });
+    // Create repair history
+    await RepairHistory.create({
+      issue: issue._id,
+      updatedBy: req.user._id,
+      status: "Assigned",
+      note: `Assigned to ${staff.name}`,
+    });
 
+    // Notify the reporter
     await createNotification({
       user: issue.reportedBy,
-      message: `Your issue "${issue.title}" has been assigned and will be addressed soon`,
-      type: 'issue_assigned',
+      message: `Your issue "${issue.title}" has been assigned to ${staff.name}.`,
+      type: "issue_assigned",
       issue: issue._id,
     });
 
-    res.status(200).json({ success: true, message: 'Issue assigned successfully', issue });
+    // Notify the assigned teacher
+    await createNotification({
+      user: assignedTo,
+      message: `A new issue "${issue.title}" has been assigned to you by the administrator.`,
+      type: "issue_assigned",
+      issue: issue._id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Issue assigned successfully",
+      issue,
+    });
+
   } catch (error) {
     next(error);
   }
