@@ -39,16 +39,30 @@ const Register = () => {
     }
   };
 
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
-      <div className="card w-full max-w-md p-8 md:p-10 shadow-xl">
+  const background =
+  "https://res.cloudinary.com/mg7foqao/image/upload/v1785076035/Login_page_ryfqa1.png";
+
+return (
+  <div
+    className="relative min-h-screen bg-cover bg-center"
+    style={{
+      backgroundImage: `url(${background})`,
+    }}
+  >
+    {/* Dark Overlay */}
+    <div className="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
+
+    {/* Registration Card */}
+    <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
+
+      <div className="w-full max-w-lg rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl p-8">
 
         {/* Heading */}
-        <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">
+        <h1 className="text-4xl font-bold text-center text-gray-900 mb-2">
           Create Your Account
         </h1>
 
-        <p className="text-center text-gray-500 dark:text-gray-400 mb-8">
+        <p className="text-center text-gray-500 mb-8">
           Join as a Parent or Teacher
         </p>
 
@@ -69,11 +83,11 @@ const Register = () => {
               className="input-field"
               placeholder="John Doe"
               autoComplete="name"
-              {...register('name', {
-                required: 'Name is required',
+              {...register("name", {
+                required: "Name is required",
                 minLength: {
                   value: 2,
-                  message: 'Name is too short',
+                  message: "Name is too short",
                 },
               })}
             />
@@ -205,11 +219,10 @@ const Register = () => {
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
 
-        </form>
+               </form>
 
-        {/* Login Link */}
-        <p className="text-center text-gray-500 dark:text-gray-400 mt-8">
-          Already have an account?{' '}
+        <p className="text-center text-gray-500 mt-8">
+          Already have an account?{" "}
           <Link
             to="/login"
             className="font-semibold text-primary-600 hover:underline"
@@ -219,8 +232,10 @@ const Register = () => {
         </p>
 
       </div>
+
     </div>
-  );
-};
+
+  </div>
+);};
 
 export default Register;
