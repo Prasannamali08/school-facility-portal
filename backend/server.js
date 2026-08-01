@@ -1,21 +1,21 @@
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
-const path = require('path');
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const mongoSanitize = require("express-mongo-sanitize");
+const path = require("path");
 
-const connectDB = require('./config/db');
-const { errorHandler, notFound } = require('./middleware/errorHandler');
+const connectDB = require("./config/db");
+const { errorHandler, notFound } = require("./middleware/errorHandler");
 
-const authRoutes = require('./routes/authRoutes');
-const issueRoutes = require('./routes/issueRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const userRoutes = require('./routes/userRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
+const authRoutes = require("./routes/authRoutes");
+const issueRoutes = require("./routes/issueRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const userRoutes = require("./routes/userRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 // Connect Database
 connectDB();
@@ -31,14 +31,8 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-
         scriptSrc: ["'self'"],
-
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-        ],
-
+        styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: [
           "'self'",
           "data:",
@@ -46,29 +40,40 @@ app.use(
           "https://res.cloudinary.com",
           "https://placehold.co",
         ],
-
         connectSrc: [
           "'self'",
-          process.env.CLIENT_URL || "*",
+          "http://localhost:5173",
+          process.env.CLIENT_URL,
           "https://res.cloudinary.com",
         ],
-
-        fontSrc: [
-          "'self'",
-          "data:",
-        ],
-
+        fontSrc: ["'self'", "data:"],
         objectSrc: ["'none'"],
-
         upgradeInsecureRequests: [],
       },
     },
   })
 );
 
+// ==========================
+// CORS
+// ==========================
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -77,7 +82,7 @@ app.use(
 // Body Parser
 // ==========================
 
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Prevent NoSQL Injection
@@ -94,11 +99,11 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many requests, please try again later',
+    message: "Too many requests, please try again later",
   },
 });
 
-app.use('/api', apiLimiter);
+app.use("/api", apiLimiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -107,21 +112,22 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many authentication attempts. Please try again later.',
+    message:
+      "Too many authentication attempts. Please try again later.",
   },
 });
 
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
 
 // ==========================
 // Health Check
 // ==========================
 
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'API is running',
+    message: "API is running",
     timestamp: new Date().toISOString(),
   });
 });
@@ -130,22 +136,22 @@ app.get('/api/health', (req, res) => {
 // API Routes
 // ==========================
 
-app.use('/api/auth', authRoutes);
-app.use('/api/issues', issueRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/analytics', analyticsRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/issues", issueRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // ==========================
 // Serve React Frontend
 // ==========================
 
-const rootPath = path.resolve(__dirname, '..');
+const rootPath = path.resolve(__dirname, "..");
 
-app.use(express.static(path.join(rootPath, 'frontend', 'dist')));
+app.use(express.static(path.join(rootPath, "frontend", "dist")));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(rootPath, 'frontend', 'dist', 'index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
 });
 
 // ==========================
@@ -163,7 +169,7 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(
-    `Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+    `Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`
   );
 });
 

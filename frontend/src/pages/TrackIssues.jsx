@@ -96,13 +96,21 @@ const { data } = await api.get(endpoint, { params });
       {/* Header */}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Track Your Issues
-        </h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+  {user?.role === "teacher"
+    ? "My & Assigned Issues"
+    : user?.role === "admin"
+    ? "Manage Issues"
+    : "Track Your Issues"}
+</h1>
 
-        <p className="mt-2 text-gray-500 dark:text-gray-400">
-          Search, filter and monitor all reported facility issues.
-        </p>
+<p className="mt-2 text-gray-500 dark:text-gray-400">
+  {user?.role === "teacher"
+    ? "View your reported issues and issues assigned to you."
+    : user?.role === "admin"
+    ? "Monitor and manage all reported issues."
+    : "Search, filter and monitor all reported facility issues."}
+</p>
       </div>
 
       {/* Filters */}

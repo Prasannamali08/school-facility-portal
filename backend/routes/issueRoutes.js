@@ -10,6 +10,7 @@ const {
   assignIssue,
   updateStatus,
   addComment,
+  submitRepair, // <-- Add this
 } = require('../controllers/issueController');
 const { protect, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -22,7 +23,16 @@ router.put('/:id', protect, upload.array('images', 5), updateIssue);
 router.delete('/:id', protect, deleteIssue);
 
 router.put('/:id/assign', protect, authorize('admin'), assignIssue);
-router.put('/:id/status', protect, authorize('admin'), upload.single('photo'), updateStatus);
-router.post('/:id/comments', protect, addComment);
 
+router.put(
+  '/:id/repair',
+  protect,
+  authorize('teacher'),
+  upload.single('repairImage'),
+  submitRepair
+);
+
+router.put('/:id/status', protect, authorize('admin'), upload.single('photo'), updateStatus);
+
+router.post('/:id/comments', protect, addComment);
 module.exports = router;

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -20,11 +21,20 @@ const IssueDetails = () => {
   const [statusForm, setStatusForm] = useState({ status: '', note: '' });
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [assigningTo, setAssigningTo] = useState('');
+  const [repairImage, setRepairImage] = useState(null);
+const [repairNote, setRepairNote] = useState('');
+const [submittingRepair, setSubmittingRepair] = useState(false);
+
+const [resolvedImage, setResolvedImage] = useState(null);
+const [verificationNote, setVerificationNote] = useState('');
 
   const fetchIssue = useCallback(async () => {
     try {
       const { data } = await api.get(`/issues/${id}`);
       setIssue(data.issue);
+      if (data.issue.assignedTo) {
+  setAssigningTo(data.issue.assignedTo._id);
+}
       setStatusForm({ status: data.issue.status, note: '' });
     } catch (err) {
       toast.error('Issue not found');
@@ -55,6 +65,42 @@ const IssueDetails = () => {
       setSubmittingComment(false);
     }
   };
+  const handleSubmitRepair = async (e) => {
+  e.preventDefault();
+
+  if (!repairImage) {
+    return toast.error("Please select a repair image.");
+  }
+
+  try {
+    setSubmittingRepair(true);
+
+    const formData = new FormData();
+    formData.append("repairImage", repairImage);
+    formData.append("repairNote", repairNote);
+
+    await api.put(`/issues/${id}/repair`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success("Repair submitted successfully.");
+
+    setRepairImage(null);
+    setRepairNote("");
+
+    fetchIssue();
+
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message ||
+      "Failed to submit repair."
+    );
+  } finally {
+    setSubmittingRepair(false);
+  }
+};
 
   const handleAssign = async () => {
     if (!assigningTo) return toast.error('Select a staff member first');
@@ -67,20 +113,48 @@ const IssueDetails = () => {
     }
   };
 
-  const handleStatusUpdate = async (e) => {
-    e.preventDefault();
+ const handleStatusUpdate = async (e) => {
+  e.preventDefault();
+
+  try {
     setUpdatingStatus(true);
-    try {
-      await api.put(`/issues/${id}/status`, { status: statusForm.status, note: statusForm.note });
-      toast.success('Status updated');
-      setStatusForm((prev) => ({ ...prev, note: '' }));
-      fetchIssue();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update status');
-    } finally {
-      setUpdatingStatus(false);
+
+    const formData = new FormData();
+
+    formData.append("status", statusForm.status);
+    formData.append("note", verificationNote || statusForm.note);
+
+    if (resolvedImage) {
+      formData.append("photo", resolvedImage);
     }
-  };
+
+    await api.put(`/issues/${id}/status`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success("Issue updated successfully");
+
+    setVerificationNote("");
+    setResolvedImage(null);
+
+    setStatusForm((prev) => ({
+      ...prev,
+      note: "",
+    }));
+
+    fetchIssue();
+
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message ||
+      "Failed to update status"
+    );
+  } finally {
+    setUpdatingStatus(false);
+  }
+};
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this issue? This cannot be undone.')) return;
@@ -94,12 +168,18 @@ const IssueDetails = () => {
   };
 
   if (loading) return <div className="skeleton h-64 max-w-4xl mx-auto" />;
-  if (!issue) return null;
+if (!issue) return null;
 
-  const canDelete = user.role === 'admin' || (issue.reportedBy._id === user.id && issue.status === 'Pending');
+const canDelete =
+  user?.role === "admin" ||
+  (
+    issue.reportedBy._id.toString() ===
+    (user?._id || user?.id).toString() &&
+    issue.status === "Pending"
+  );
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
+return (
+  <div className="max-w-4xl mx-auto space-y-6">
       <div className="card p-6">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
@@ -143,40 +223,195 @@ const IssueDetails = () => {
       </div>
 
       {/* Admin controls */}
-      {user.role === 'admin' && (
+      {user?.role === 'admin' && (
         <div className="card p-6 space-y-5">
           <h2 className="font-semibold">Admin Actions</h2>
 
           <div className="grid sm:grid-cols-2 gap-3">
             <div className="flex gap-2">
-              <select className="input-field" value={assigningTo} onChange={(e) => setAssigningTo(e.target.value)}>
+                        <select
+            className="input-field"
+            value={assigningTo}
+            disabled={issue.status !== "Pending"}
+            onChange={(e) => setAssigningTo(e.target.value)}
+          >
                 <option value="">Select staff to assign...</option>
                 {staff.map((s) => <option key={s._id} value={s._id}>{s.name} ({s.role})</option>)}
               </select>
-              <button onClick={handleAssign} className="btn-secondary whitespace-nowrap">Assign</button>
+                        <button
+            onClick={handleAssign}
+            disabled={issue.status !== "Pending"}
+            className="btn-secondary whitespace-nowrap disabled:opacity-50"
+          >
+            Assign
+          </button>
             </div>
           </div>
 
-          <form onSubmit={handleStatusUpdate} className="grid sm:grid-cols-3 gap-3 items-start">
-            <select
-              className="input-field"
-              value={statusForm.status}
-              onChange={(e) => setStatusForm((prev) => ({ ...prev, status: e.target.value }))}
-            >
-              {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <input
-              className="input-field sm:col-span-1"
-              placeholder="Add a note (optional)"
-              value={statusForm.note}
-              onChange={(e) => setStatusForm((prev) => ({ ...prev, note: e.target.value }))}
-            />
-            <button type="submit" disabled={updatingStatus} className="btn-primary">
-              {updatingStatus ? 'Updating...' : 'Update Status'}
-            </button>
-          </form>
+                   {!issue.adminResolvedImage?.url && (
+  <form
+    onSubmit={handleStatusUpdate}
+    className="space-y-4"
+  >
+    <select
+  className="input-field"
+  disabled={issue.status === "Resolved"}
+      value={statusForm.status}
+      onChange={(e) =>
+        setStatusForm((prev) => ({
+          ...prev,
+          status: e.target.value,
+        }))
+      }
+    >
+      {STATUSES.map((s) => (
+        <option key={s} value={s}>
+          {s}
+        </option>
+      ))}
+    </select>
+
+    <textarea
+      className="input-field"
+      rows={3}
+      placeholder="Verification Note"
+      value={verificationNote}
+      onChange={(e) =>
+        setVerificationNote(e.target.value)
+      }
+    />
+
+          <input
+        type="file"
+        accept="image/*"
+        disabled={issue.status === "Resolved"}
+        onChange={(e) =>
+          setResolvedImage(e.target.files[0])
+        }
+/>
+
+  <button
+  type="submit"
+  disabled={updatingStatus || issue.status === "Resolved"}
+  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {updatingStatus
+    ? "Updating..."
+    : "Update Status"}
+</button>
+  </form>
+)}
         </div>
       )}
+      {/* Teacher Repair Upload Form */}
+        {user?.role === "teacher" &&
+        issue.assignedTo &&
+        (issue.assignedTo._id === (user._id || user.id)) &&
+        !issue.teacherRepairImage?.url &&
+        issue.status !== "Resolved" && (
+        <div className="card p-6 space-y-4">
+
+        <h2 className="font-semibold">
+        Submit Repair
+        </h2>
+
+        <textarea
+        className="input-field"
+        rows={3}
+        placeholder="Repair Note"
+        value={repairNote}
+        onChange={(e)=>setRepairNote(e.target.value)}
+        />
+
+        <input
+        type="file"
+        accept="image/*"
+        onChange={(e)=>setRepairImage(e.target.files[0])}
+        />
+                    <button
+          type="button"
+          onClick={handleSubmitRepair}
+          disabled={submittingRepair || !repairImage}
+          className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {submittingRepair
+            ? "Uploading..."
+            : "Submit Repair"}
+        </button>
+
+        </div>
+
+        )}
+        {issue.teacherRepairImage?.url &&
+ user?.role === "teacher" &&
+ issue.status !== "Resolved" && (
+  <div className="mb-4 rounded-lg bg-green-100 border border-green-300 p-4">
+    <p className="text-green-700 font-medium">
+      ✔ Repair submitted successfully. Waiting for administrator verification.
+    </p>
+  </div>
+)}
+      {/* Teacher Repair Details */}
+
+        {issue.teacherRepairImage?.url && (
+          <div className="card p-6">
+            <h2 className="font-semibold mb-4">
+              Teacher Repair Details
+            </h2>
+
+            <img
+          src={issue.teacherRepairImage.url}
+          alt="Teacher Repair"
+         className="w-full max-w-md h-64 object-cover rounded-lg border shadow"
+        />
+            {issue.teacherRepairNote && (
+              <p className="mt-3">
+                <strong>Repair Note:</strong>{" "}
+                {issue.teacherRepairNote}
+              </p>
+            )}
+
+            {issue.teacherCompletedAt && (
+              <p className="text-sm text-gray-500 mt-2">
+                Completed on{" "}
+                {new Date(
+                  issue.teacherCompletedAt
+                ).toLocaleString()}
+              </p>
+            )}
+          </div>
+        )}
+        {/* Admin Verification */}
+
+        {issue.status === "Resolved" &&
+ issue.adminResolvedImage?.url && (
+          <div className="card p-6">
+            <h2 className="font-semibold mb-4">
+              Admin Verification
+            </h2>
+
+                                    <img
+                src={issue.adminResolvedImage.url}
+                alt="Admin Verification"
+                className="w-full max-w-md h-64 object-cover rounded-lg border shadow"
+              />
+            {issue.adminVerificationNote && (
+              <p className="mt-3">
+                <strong>Verification Note:</strong>{" "}
+                {issue.adminVerificationNote}
+              </p>
+            )}
+
+            {issue.verifiedAt && (
+              <p className="text-sm text-gray-500 mt-2">
+                Verified on{" "}
+                {new Date(
+                  issue.verifiedAt
+                ).toLocaleString()}
+              </p>
+            )}
+          </div>
+        )}
 
       {/* Timeline */}
       <div className="card p-6">
@@ -219,12 +454,24 @@ const IssueDetails = () => {
         </div>
         <form onSubmit={handleAddComment} className="flex gap-2">
           <input
-            className="input-field"
-            placeholder="Add a comment..."
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-          />
-          <button type="submit" disabled={submittingComment} className="btn-primary">
+                className="input-field"
+                placeholder={
+                issue.status === "Resolved"
+                ? "Issue already resolved"
+                : "Add a comment..."
+                }
+                disabled={issue.status==="Resolved"}
+                value={commentText}
+                onChange={(e)=>setCommentText(e.target.value)}
+                />
+         <button
+                      type="submit"
+                      disabled={
+                      submittingComment ||
+                      issue.status==="Resolved"
+                      }
+                      className="btn-primary disabled:opacity-50"
+                      >
             <FiSend />
           </button>
         </form>
@@ -234,3 +481,12 @@ const IssueDetails = () => {
 };
 
 export default IssueDetails;
+
+
+
+
+
+
+
+
+

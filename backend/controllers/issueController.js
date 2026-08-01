@@ -96,61 +96,156 @@ const getAllIssues = async (req, res, next) => {
 // @desc Get issues reported by the logged-in user
 // @route GET /api/issues/my
 // @access Private
+// @desc Get issues for logged-in user
+// @route GET /api/issues/my
+// @access Private
+
 const getUserIssues = async (req, res, next) => {
   try {
-    const { search, category, status, priority, page = 1, limit = 10 } = req.query;
+    const {
+      search,
+      category,
+      status,
+      priority,
+      page = 1,
+      limit = 10,
+    } = req.query;
 
-    const query = { reportedBy: req.user._id };
+    let query = {};
+
+    // Role-wise access
+    if (req.user.role === "admin") {
+      query = {};
+    } else if (req.user.role === "teacher") {
+      query = {
+        $or: [
+          { reportedBy: req.user._id },
+          { assignedTo: req.user._id },
+        ],
+      };
+    } else {
+      query = {
+        reportedBy: req.user._id,
+      };
+    }
+
+    // Filters
     if (category) query.category = category;
     if (status) query.status = status;
     if (priority) query.priority = priority;
+
+    // Search
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { location: { $regex: search, $options: 'i' } },
-      ];
+      const searchQuery = {
+        $or: [
+          { title: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+          { location: { $regex: search, $options: "i" } },
+        ],
+      };
+
+      if (req.user.role === "teacher") {
+        query = {
+          $and: [
+            {
+              $or: [
+                { reportedBy: req.user._id },
+                { assignedTo: req.user._id },
+              ],
+            },
+            searchQuery,
+          ],
+        };
+      } else if (req.user.role === "parent") {
+        query = {
+          $and: [
+            { reportedBy: req.user._id },
+            searchQuery,
+          ],
+        };
+      } else {
+        query = searchQuery;
+      }
+
+      if (category) query.category = category;
+      if (status) query.status = status;
+      if (priority) query.priority = priority;
     }
 
-    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
-    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
+    const pageNum = Math.max(parseInt(page), 1);
+    const limitNum = Math.max(parseInt(limit), 1);
 
     const [issues, total] = await Promise.all([
       Issue.find(query)
-        .populate('assignedTo', 'name email')
-        .sort('-createdAt')
+        .populate("reportedBy", "name email")
+        .populate("assignedTo", "name email")
+        .sort("-createdAt")
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum),
+
       Issue.countDocuments(query),
     ]);
 
-    res.status(200).json({ success: true, count: issues.length, total, page: pageNum, pages: Math.ceil(total / limitNum), issues });
+    res.status(200).json({
+      success: true,
+      count: issues.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
+      issues,
+    });
   } catch (error) {
     next(error);
   }
 };
-
-// @desc Get single issue by id
+// @desc Get single issue
 // @route GET /api/issues/:id
 // @access Private
+
 const getIssue = async (req, res, next) => {
   try {
     const issue = await Issue.findById(req.params.id)
-      .populate('reportedBy', 'name email role phone')
-      .populate('assignedTo', 'name email')
-      .populate('comments.user', 'name role avatar')
-      .populate('timeline.updatedBy', 'name role');
+      .populate("reportedBy", "name email role phone")
+      .populate("assignedTo", "name email role")
+      .populate("comments.user", "name role avatar")
+      .populate("timeline.updatedBy", "name role");
 
     if (!issue) {
-      return res.status(404).json({ success: false, message: 'Issue not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Issue not found",
+      });
     }
 
-    // Non-admins may only view their own issues
-    if (req.user.role !== 'admin' && issue.reportedBy._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'You are not authorized to view this issue' });
+    // Admin can view all
+    if (req.user.role === "admin") {
+      return res.status(200).json({
+        success: true,
+        issue,
+      });
     }
 
-    res.status(200).json({ success: true, issue });
+    // Parent can view only their own issues
+    const isOwner =
+      issue.reportedBy._id.toString() === req.user._id.toString();
+
+    // Assigned teacher can view assigned issue
+    const isAssignedTeacher =
+      issue.assignedTo &&
+      issue.assignedTo._id.toString() === req.user._id.toString();
+
+    if (!isOwner && !isAssignedTeacher) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this issue",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      issue,
+    });
+
   } catch (error) {
     next(error);
   }
@@ -238,6 +333,8 @@ const assignIssue = async (req, res, next) => {
       });
     }
 
+    
+
     // Find the assigned user
     const staff = await User.findById(assignedTo);
 
@@ -302,46 +399,217 @@ const assignIssue = async (req, res, next) => {
     next(error);
   }
 };
+// @desc Teacher submits repair for verification
+// @route PUT /api/issues/:id/repair
+// @access Private (Teacher)
 
+const submitRepair = async (req, res, next) => {
+  try {
+    const { repairNote } = req.body;
+
+    const issue = await Issue.findById(req.params.id);
+
+if (!issue) {
+  return res.status(404).json({
+    success: false,
+    message: "Issue not found",
+  });
+}
+
+// Prevent submitting repair after resolution
+if (issue.status === "Resolved") {
+  return res.status(400).json({
+    success: false,
+    message: "This issue has already been resolved.",
+  });
+}
+
+    // Only assigned teacher can submit repair
+    if (
+      !issue.assignedTo ||
+      issue.assignedTo.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not assigned to this issue",
+      });
+    }
+
+    // Upload repair image
+    if (req.file) {
+      issue.teacherRepairImage = {
+        url: req.file.path,
+        publicId: req.file.filename,
+      };
+    }
+
+    // Save repair note
+    issue.teacherRepairNote = repairNote || "";
+
+    // Save completion time
+    issue.teacherCompletedAt = new Date();
+
+    // Change status
+    issue.status = "In Progress";
+
+    // Timeline
+    issue.timeline.push({
+      status: "In Progress",
+      note: repairNote || "Repair completed by teacher",
+      updatedBy: req.user._id,
+    });
+
+    await issue.save();
+
+    // Repair History
+    await RepairHistory.create({
+      issue: issue._id,
+      updatedBy: req.user._id,
+      status: "In Progress",
+      note: repairNote || "Repair completed by teacher",
+      photo: req.file
+        ? {
+            url: req.file.path,
+            publicId: req.file.filename,
+          }
+        : undefined,
+    });
+
+    // Notify all admins
+    const admins = await User.find({ role: "admin" }).select("_id");
+
+    await Promise.all(
+      admins.map((admin) =>
+        createNotification({
+          user: admin._id,
+          message: `Teacher has completed the repair for "${issue.title}". Please verify.`,
+          type: "repair_completed",
+          issue: issue._id,
+        })
+      )
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Repair submitted successfully. Waiting for admin verification.",
+      issue,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // @desc Update issue status (with optional repair note/photo) - drives repair history + notifications
 // @route PUT /api/issues/:id/status
 // @access Private (admin)
+// @desc Update issue status (Admin)
+// @route PUT /api/issues/:id/status
+// @access Private (Admin)
+
 const updateStatus = async (req, res, next) => {
   try {
     const { status, note } = req.body;
-    const validStatuses = ['Pending', 'Assigned', 'In Progress', 'Resolved', 'Rejected'];
+
+    const validStatuses = [
+      "Pending",
+      "Assigned",
+      "In Progress",
+      "Resolved",
+      "Rejected",
+    ];
 
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ success: false, message: 'Invalid status value' });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status value",
+      });
     }
 
     const issue = await Issue.findById(req.params.id);
-    if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
 
-    issue.status = status;
-    if (status === 'Resolved') issue.resolvedAt = new Date();
+    if (!issue) {
+      return res.status(404).json({
+        success: false,
+        message: "Issue not found",
+      });
+    }
 
-    const photo = req.file ? { url: req.file.path, publicId: req.file.filename } : undefined;
+    // Update status
+    // Teacher must submit repair before admin resolves
+if (
+  status === "Resolved" &&
+  !issue.teacherRepairImage?.url
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Teacher must submit a repair image before resolving the issue.",
+  });
+}
 
-    issue.timeline.push({ status, note: note || '', updatedBy: req.user._id });
+// Update status
+issue.status = status;
+
+    // If admin resolves the issue
+    if (status === "Resolved") {
+
+  issue.resolvedAt = new Date();
+
+  issue.verifiedAt = new Date();
+
+  issue.adminVerificationNote = note || "";
+
+  if (req.file) {
+    issue.adminResolvedImage = {
+      url: req.file.path,
+      publicId: req.file.filename,
+    };
+  }
+
+} else {
+
+  issue.adminVerificationNote = "";
+
+}
+
+    // Timeline
+    issue.timeline.push({
+      status,
+      note: note || "",
+      updatedBy: req.user._id,
+    });
+
     await issue.save();
 
+    // Repair History
     await RepairHistory.create({
       issue: issue._id,
       updatedBy: req.user._id,
       status,
-      note: note || '',
-      photo,
+      note: note || "",
+      photo: req.file
+        ? {
+            url: req.file.path,
+            publicId: req.file.filename,
+          }
+        : undefined,
     });
 
+    // Notify Reporter
     await createNotification({
       user: issue.reportedBy,
-      message: `Your issue "${issue.title}" status changed to "${status}"`,
-      type: status === 'Resolved' ? 'issue_resolved' : 'issue_status',
+      message:
+        status === "Resolved"
+          ? `Your issue "${issue.title}" has been resolved successfully.`
+          : `Your issue "${issue.title}" status changed to "${status}".`,
+      type: status === "Resolved" ? "issue_resolved" : "issue_status",
       issue: issue._id,
     });
 
-    res.status(200).json({ success: true, message: 'Status updated successfully', issue });
+    res.status(200).json({
+      success: true,
+      message: `Issue status updated to ${status}`,
+      issue,
+    });
   } catch (error) {
     next(error);
   }
@@ -350,35 +618,106 @@ const updateStatus = async (req, res, next) => {
 // @desc Add a comment to an issue
 // @route POST /api/issues/:id/comments
 // @access Private
+// @desc Add comment
+// @route POST /api/issues/:id/comments
+// @access Private
+
 const addComment = async (req, res, next) => {
   try {
     const { text } = req.body;
-    if (!text || !text.trim()) return res.status(400).json({ success: false, message: 'Comment text is required' });
 
-    const issue = await Issue.findById(req.params.id);
-    if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
-
-    const isOwner = issue.reportedBy.toString() === req.user._id.toString();
-    if (req.user.role !== 'admin' && !isOwner) {
-      return res.status(403).json({ success: false, message: 'Not authorized to comment on this issue' });
+    if (!text || !text.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Comment text is required",
+      });
     }
 
-    issue.comments.push({ user: req.user._id, text: text.trim() });
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({
+        success: false,
+        message: "Issue not found",
+      });
+    }
+
+    const isOwner =
+      issue.reportedBy.toString() === req.user._id.toString();
+
+    const isAssignedTeacher =
+      issue.assignedTo &&
+      issue.assignedTo.toString() === req.user._id.toString();
+
+    if (
+      req.user.role !== "admin" &&
+      !isOwner &&
+      !isAssignedTeacher
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to comment on this issue",
+      });
+    }
+
+    issue.comments.push({
+      user: req.user._id,
+      text: text.trim(),
+    });
+
     await issue.save();
 
-    // Notify the other party
-    const notifyUserId = req.user.role === 'admin' ? issue.reportedBy : null;
-    if (notifyUserId) {
+    // Notify reporter
+   // Teacher commented
+if (req.user.role === "teacher") {
+
+  // Notify parent
+  if (issue.reportedBy.toString() !== req.user._id.toString()) {
+    await createNotification({
+      user: issue.reportedBy,
+      message: `Teacher commented on your issue "${issue.title}".`,
+      type: "comment_added",
+      issue: issue._id,
+    });
+  }
+
+  // Notify all admins
+  const admins = await User.find({ role: "admin" }).select("_id");
+
+  await Promise.all(
+    admins.map((admin) =>
+      createNotification({
+        user: admin._id,
+        message: `Teacher commented on issue "${issue.title}".`,
+        type: "comment_added",
+        issue: issue._id,
+      })
+    )
+  );
+}
+
+    // Notify assigned teacher
+    if (
+      req.user.role === "admin" &&
+      issue.assignedTo
+    ) {
       await createNotification({
-        user: notifyUserId,
-        message: `New comment on your issue "${issue.title}"`,
-        type: 'comment_added',
+        user: issue.assignedTo,
+        message: `Administrator commented on issue "${issue.title}".`,
+        type: "comment_added",
         issue: issue._id,
       });
     }
 
-    const updated = await Issue.findById(issue._id).populate('comments.user', 'name role avatar');
-    res.status(201).json({ success: true, message: 'Comment added', comments: updated.comments });
+    const updatedIssue = await Issue.findById(issue._id)
+      .populate("comments.user", "name role avatar");
+
+    res.status(201).json({
+      success: true,
+      message: "Comment added successfully",
+      comments: updatedIssue.comments,
+    });
+
   } catch (error) {
     next(error);
   }
@@ -392,6 +731,7 @@ module.exports = {
   updateIssue,
   deleteIssue,
   assignIssue,
+  submitRepair,
   updateStatus,
   addComment,
 };

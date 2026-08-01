@@ -81,6 +81,53 @@ const issueSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    
+    
+
+    
+    // Teacher Repair Details
+teacherRepairImage: {
+  url: {
+    type: String,
+    default: '',
+  },
+  publicId: {
+    type: String,
+    default: '',
+  },
+},
+
+teacherRepairNote: {
+  type: String,
+  default: '',
+},
+
+teacherCompletedAt: {
+  type: Date,
+  default: null,
+},
+
+// Admin Verification Details
+adminResolvedImage: {
+  url: {
+    type: String,
+    default: '',
+  },
+  publicId: {
+    type: String,
+    default: '',
+  },
+},
+
+adminVerificationNote: {
+  type: String,
+  default: '',
+},
+
+verifiedAt: {
+  type: Date,
+  default: null,
+},
     comments: [commentSchema],
     timeline: [timelineEventSchema],
     resolvedAt: { type: Date, default: null },
