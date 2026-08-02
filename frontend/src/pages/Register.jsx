@@ -53,12 +53,23 @@ return (
     <div className="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
 
     {/* Registration Card */}
-    <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-
-      <div className="w-full max-w-lg rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl p-8">
+  <div className="relative z-10 flex min-h-screen items-center justify-center px-4 sm:px-6 lg:px-8 py-6">
+            <div className="
+            w-full
+            max-w-sm
+            sm:max-w-md
+            lg:max-w-lg
+            rounded-3xl
+            bg-white/95
+            backdrop-blur-xl
+            shadow-2xl
+            p-5
+            sm:p-6
+            lg:p-8
+            ">
 
         {/* Heading */}
-        <h1 className="text-4xl font-bold text-center text-gray-900 mb-2">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-2">
           Create Your Account
         </h1>
 
@@ -69,7 +80,7 @@ return (
         {/* Registration Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-5"
+          className="space-y-4 sm:space-y-5"
         >
 
           {/* Full Name */}

@@ -54,11 +54,13 @@ const Login = () => {
     <div className="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
 
     {/* Main Content */}
-    <div className="relative z-10 flex min-h-screen">
+    <div className="relative z-10 min-h-screen lg:grid lg:grid-cols-2 flex flex-col">
 
       {/* ================= LEFT SECTION START ================= */}
 
-     <div className="hidden lg:flex w-1/2 flex-col justify-center px-20 text-white">
+    <div className="flex flex-col justify-center text-white
+          px-6 md:px-10 lg:px-16 xl:px-20
+          py-10 lg:py-0">
         <h2 className="text-3xl font-bold">
           School Facility Portal
         </h2>
@@ -67,7 +69,7 @@ const Login = () => {
           Report. Track. Resolve.
         </p>
 
-        <h1 className="text-5xl xl:text-6xl font-extrabold leading-tight mt-12">
+        <h1 className="text-3xl md:text-5xl xl:text-6xl font-extrabold">
            School Facility
           <br />
           Condition Reporting &
@@ -83,7 +85,7 @@ const Login = () => {
 </p>
 
 {/* Features */}
-<div className="grid grid-cols-2 gap-8 mt-12">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
 
   <div className="flex items-start gap-3">
     <FiClipboard className="text-blue-400 text-2xl mt-1" />
@@ -129,9 +131,22 @@ const Login = () => {
 </div>
         
         {/* LOGIN CARD */}
-        <div className="w-full lg:w-1/2 flex items-center justify-end px-8 lg:px-20">
-
-         <div className="w-full max-w-[430px] rounded-3xl bg-white/95 backdrop-blur-xl shadow-2xl p-8">
+  <div className="flex justify-center items-center
+                px-5 md:px-8 lg:px-20
+                pb-8 lg:pb-0">
+<div className="
+                          w-full
+                          max-w-sm
+                          sm:max-w-md
+                          lg:max-w-[430px]
+                          rounded-3xl
+                          bg-white/95
+                          backdrop-blur-xl
+                          shadow-2xl
+                          p-5
+                          sm:p-6
+                          lg:p-8
+                        ">
             <h2 className="text-3xl font-bold text-center text-gray-900 mb-2">
                 Welcome Back
             </h2>
