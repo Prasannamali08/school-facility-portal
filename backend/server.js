@@ -146,12 +146,35 @@ app.use("/api/analytics", analyticsRoutes);
 // Serve React Frontend
 // ==========================
 
-const rootPath = path.resolve(__dirname, "..");
+// ==========================
+// Serve React Frontend
+// ==========================
 
-app.use(express.static(path.join(rootPath, "frontend", "dist")));
+const fs = require("fs");
+
+const distPath = path.join(__dirname, "../frontend/dist");
+
+console.log("Dist Path:", distPath);
+console.log("Dist Exists:", fs.existsSync(distPath));
+console.log(
+  "Index Exists:",
+  fs.existsSync(path.join(distPath, "index.html"))
+);
+
+app.use(express.static(distPath));
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(rootPath, "frontend", "dist", "index.html"));
+  const indexFile = path.join(distPath, "index.html");
+
+  if (!fs.existsSync(indexFile)) {
+    return res.status(500).json({
+      success: false,
+      message: "index.html not found",
+      path: indexFile,
+    });
+  }
+
+  res.sendFile(indexFile);
 });
 
 // ==========================
