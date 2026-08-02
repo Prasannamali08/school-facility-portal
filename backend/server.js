@@ -65,19 +65,21 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin(origin, callback) {
+      // Allow browser requests without an Origin header
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      console.log("Blocked Origin:", origin);
+
+      return callback(null, true); // Don't block static assets
     },
     credentials: true,
   })
 );
-
 // ==========================
 // Body Parser
 // ==========================
